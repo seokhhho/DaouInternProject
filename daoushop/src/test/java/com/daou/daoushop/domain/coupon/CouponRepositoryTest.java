@@ -41,10 +41,9 @@ public class CouponRepositoryTest {
 		List<CouponEntity> couponList = couponRepository.findAll();
 		
 		CouponEntity coupon = couponList.get(0);
-//		assertThat(coupon.getUser());
-//		assertThat(coupon.getFivePercent());
-		System.out.println("Hi " + coupon.getUser());
-//		assertThat(coupon.getTenPercent());
-//		assertThat(coupon.getTwentyPercent());
+		assertThat(coupon.getUser());
+		assertThat(coupon.getFivePercent());
+		assertThat(coupon.getTenPercent());
+		assertThat(coupon.getTwentyPercent());
 	}
 }
