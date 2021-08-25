@@ -13,18 +13,20 @@ import lombok.NoArgsConstructor;
 public class CouponEntity {
 	
 	@Id
-	private String user;
-	private int fivePercent;
-	private int tenPercent;
-	private int twentyPercent;
+	private String couponCode;
+	private String id;
+	private int discountRate;
+	private int minAmount;
 	
 	@Builder
-	public CouponEntity(String user, int fivePercent, int tenPercent, int twentyPercent) {
-		this.user = user;
-		this.fivePercent = fivePercent;
-		this.tenPercent = tenPercent;
-		this.twentyPercent = twentyPercent;
+	public CouponEntity(String couponCode, String id, int discountRate, int minAmount) {
+		this.couponCode = couponCode;
+		this.id = id;
+		this.discountRate = discountRate;
+		this.minAmount = minAmount;
 	}
+	
+
 
 
 }

@@ -16,7 +16,7 @@
 
 
 
-![System Diagram](./산출물/System Diagram.png)
+![System_Diagram](./산출물/System_Diagram.png)
 
 
 
