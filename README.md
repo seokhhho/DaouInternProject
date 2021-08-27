@@ -30,6 +30,8 @@
 
 ### Data Process Diagram
 
+https://miro.com/app/board/o9J_l0Oex6o=/
+
 ![](./산출물/DataProcessDiagram/자동결제.png)
 
 
