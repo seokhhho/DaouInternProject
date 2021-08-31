@@ -1,5 +1,7 @@
 package com.daou.daoushop.domain.usedCoupon;
 
-public interface UsedCouponRepository {
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface UsedCouponRepository   extends JpaRepository<UsedCouponEntity, Integer>{
 
 }

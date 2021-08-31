@@ -1,5 +1,7 @@
 package com.daou.daoushop.domain.point;
 
-public interface PointRepository {
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface PointRepository   extends JpaRepository<PointEntity, Integer>{
 
 }
