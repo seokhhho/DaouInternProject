@@ -5,6 +5,10 @@ import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+
+import com.daou.daoushop.domain.user.UserEntity;
 
 import lombok.Builder;
 import lombok.Getter;
@@ -18,14 +22,17 @@ public class CouponEntity {
 	@Id
 	@GeneratedValue
 	private Integer couponId;
-	private int userNumber;
+
+	@ManyToOne
+	@JoinColumn(name="user_number")
+	private UserEntity user;
 	@Enumerated(EnumType.STRING)
 	private DiscountRate discountRate;
 	private int isUsed;
 	
 	@Builder
-	public CouponEntity(int userNumber, DiscountRate discountRate, int isUsed) {
-		this.userNumber = userNumber;
+	public CouponEntity(UserEntity user, DiscountRate discountRate, int isUsed) {
+		this.user = user;
 		this.discountRate = discountRate;
 		this.isUsed = isUsed;
 	}

@@ -7,12 +7,12 @@ import lombok.Getter;
 @Getter
 public class UserResponseDto {
 
-	private Integer userName;
+	private Integer userNumber;
 	private String id;
 	private String name;
 	
 	public UserResponseDto(UserEntity entity) {
-		this.userName = entity.getUserNumber();
+		this.userNumber = entity.getUserNumber();
 		this.id = entity.getId();
 		this.name = entity.getName();
 	}

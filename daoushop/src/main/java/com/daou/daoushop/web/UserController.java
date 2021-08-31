@@ -24,7 +24,6 @@ public class UserController {
 	
 	@PostMapping(value= "/join")
 	public Integer join(@RequestBody UserRequestDto requestDto) {
-		System.out.println("하이하이" + requestDto.getId() +"ㅋㅋ" + requestDto.getName());
 		return userService.save(requestDto);
 	}
 	

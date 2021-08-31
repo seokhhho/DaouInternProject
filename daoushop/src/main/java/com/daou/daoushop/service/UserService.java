@@ -16,6 +16,7 @@ import com.daou.daoushop.domain.coupon.CouponRepository;
 import com.daou.daoushop.domain.coupon.DiscountRate;
 import com.daou.daoushop.domain.point.PointEntity;
 import com.daou.daoushop.domain.point.PointRepository;
+import com.daou.daoushop.domain.user.UserEntity;
 import com.daou.daoushop.domain.user.UserRepository;
 import com.daou.daoushop.web.dto.UserRequestDto;
 import com.daou.daoushop.web.dto.UserResponseDto;
@@ -32,38 +33,38 @@ public class UserService {
 	
 	@Transactional
 	public Integer save(UserRequestDto requestDto) {
-		Integer userNumber =  userRepository.save(requestDto.toEntity()).getUserNumber(); // 유저 정보 저장
+		UserEntity user =  userRepository.save(requestDto.toEntity()); // 유저 정보 저장
 
-		Calendar calendar = Calendar.getInstance(); // 유효기간 +1개월로 설정 후 10000 포인트 저장
+		Calendar calendar = Calendar.getInstance(); // 유효기간 현재에서 +1개월로 설정 후 10000 포인트 저장
 		calendar.add(Calendar.MONTH, +1);
 		Date validDay = calendar.getTime();
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 		String valid = sdf.format(validDay);
 		pointRepository.save(PointEntity.builder()
-				.userNumber(userNumber)
+				.user(user)
 				.valid(valid)
 				.pointMoney(10000)
 				.build());
 		
 		CouponEntity coupon1 = CouponEntity.builder()   //5,10,20프로  할인쿠폰 저장
-				.userNumber(userNumber)
+				.user(user)
 				.discountRate(DiscountRate.FIVE)
 				.isUsed(0)
 				.build();
 		CouponEntity coupon2 = CouponEntity.builder()
-				.userNumber(userNumber)
+				.user(user)
 				.discountRate(DiscountRate.TEN)
 				.isUsed(0)
 				.build();
 		CouponEntity coupon3 = CouponEntity.builder()
-				.userNumber(userNumber)
+				.user(user)
 				.discountRate(DiscountRate.TWENTY)
 				.isUsed(0)
 				.build();
 		List<CouponEntity> coupons = Arrays.asList(coupon1,coupon2,coupon3);
 		couponRepository.saveAll(coupons);
 		
-		return userNumber;
+		return user.getUserNumber();
 	}
 	
 	@Transactional(readOnly = true)
