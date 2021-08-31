@@ -1,6 +1,9 @@
 package com.daou.daoushop.domain.coupon;
 
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 
 import lombok.Builder;
@@ -13,18 +16,22 @@ import lombok.NoArgsConstructor;
 public class CouponEntity {
 	
 	@Id
-	private String couponCode;
-	private String id;
-	private int discountRate;
-	private int minAmount;
+	@GeneratedValue
+	private Integer couponId;
+	private int userNumber;
+	@Enumerated(EnumType.STRING)
+	private DiscountRate discountRate;
+	private int isUsed;
 	
 	@Builder
-	public CouponEntity(String couponCode, String id, int discountRate, int minAmount) {
-		this.couponCode = couponCode;
-		this.id = id;
+	public CouponEntity(int userNumber, DiscountRate discountRate, int isUsed) {
+		this.userNumber = userNumber;
 		this.discountRate = discountRate;
-		this.minAmount = minAmount;
+		this.isUsed = isUsed;
 	}
+	
+	
+
 	
 
 

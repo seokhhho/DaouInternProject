@@ -21,7 +21,6 @@ public class UserEntity {
 	
 	@Builder
 	public UserEntity(Integer userNumber, String id, String name) {
-		this.userNumber = userNumber;
 		this.id = id;
 		this.name = name;
 	}
