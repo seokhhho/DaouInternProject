@@ -25,7 +25,7 @@ public class CouponRepositoryTest {
 	}
 	
 //	@Test
-//	@DisplayName("���� ���� �׽�Ʈ")
+//	@DisplayName("쿠폰 엔티티 저장 테스트")
 //	public void saveCoupon() {
 //		
 //		String couponCode = "SDF-9876";
