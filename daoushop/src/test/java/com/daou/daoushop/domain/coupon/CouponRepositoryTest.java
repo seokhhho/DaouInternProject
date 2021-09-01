@@ -24,28 +24,28 @@ public class CouponRepositoryTest {
 		couponRepository.deleteAll();
 	}
 	
-	@Test
-	@DisplayName("ÄíÆù ÀúÀå Å×½ºÆ®")
-	public void saveCoupon() {
-		
-		String couponCode = "SDF-9876";
-		String id = "hi1234";
-		int discountRate = 10;
-		int minAmount = 20000;
-		
-		couponRepository.save(CouponEntity.builder()
-				.couponCode(couponCode)
-				.id(id)
-				.discountRate(discountRate)
-				.minAmount(minAmount)
-				.build());
-		
-		List<CouponEntity> couponList = couponRepository.findAll();
-		
-		CouponEntity coupon = couponList.get(0);
-		assertThat(coupon.getCouponCode());
-		assertThat(coupon.getId());
-		assertThat(coupon.getDiscountRate());
-		assertThat(coupon.getMinAmount());
-	}
+//	@Test
+//	@DisplayName("ì¿ í° ì—”í‹°í‹° ì €ì¥ í…ŒìŠ¤íŠ¸")
+//	public void saveCoupon() {
+//		
+//		String couponCode = "SDF-9876";
+//		String id = "hi1234";
+//		int discountRate = 10;
+//		int minAmount = 20000;
+//		
+//		couponRepository.save(CouponEntity.builder()
+//				.couponCode(couponCode)
+//				.id(id)
+//				.discountRate(discountRate)
+//				.minAmount(minAmount)
+//				.build());
+//		
+//		List<CouponEntity> couponList = couponRepository.findAll();
+//		
+//		CouponEntity coupon = couponList.get(0);
+//		assertThat(coupon.getCouponCode());
+//		assertThat(coupon.getId());
+//		assertThat(coupon.getDiscountRate());
+//		assertThat(coupon.getMinAmount());
+//	}
 }
