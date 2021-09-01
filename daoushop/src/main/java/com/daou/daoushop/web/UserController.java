@@ -2,6 +2,7 @@ package com.daou.daoushop.web;
 
 import java.util.List;
 
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -14,7 +15,7 @@ import com.daou.daoushop.web.dto.UserResponseDto;
 
 import lombok.RequiredArgsConstructor;
 
-
+@CrossOrigin(origins = "http://localhost:8080")
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/user")
@@ -24,12 +25,12 @@ public class UserController {
 	
 	@PostMapping(value= "/join")
 	public Integer join(@RequestBody UserRequestDto requestDto) {
-		return userService.save(requestDto);
+		return userService.CreateUserWithMoneyInfo(requestDto);
 	}
 	
 	@GetMapping(value = "/list")
 	public List<UserResponseDto> findAll(){
-		return userService.findAll();
+		return userService.ReadUserList();
 	}
 	
 	

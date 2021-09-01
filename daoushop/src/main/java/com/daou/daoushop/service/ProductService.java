@@ -18,7 +18,7 @@ public class ProductService {
 	private final ProductRepository productRepository;
 	
 	@Transactional(readOnly = true)
-	public List<ProductResponseDto> findAll(){
+	public List<ProductResponseDto> ReadProductList(){
 		return productRepository.findAll().stream()
 				.map(ProductResponseDto::new)
 				.collect(Collectors.toList());

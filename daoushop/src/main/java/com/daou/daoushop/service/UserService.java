@@ -18,6 +18,8 @@ import com.daou.daoushop.domain.point.PointEntity;
 import com.daou.daoushop.domain.point.PointRepository;
 import com.daou.daoushop.domain.user.UserEntity;
 import com.daou.daoushop.domain.user.UserRepository;
+import com.daou.daoushop.domain.userMoney.UserMoneyEntity;
+import com.daou.daoushop.domain.userMoney.UserMoneyRepository;
 import com.daou.daoushop.web.dto.UserRequestDto;
 import com.daou.daoushop.web.dto.UserResponseDto;
 
@@ -30,9 +32,10 @@ public class UserService {
 	private final UserRepository userRepository;
 	private final PointRepository pointRepository;
 	private final CouponRepository couponRepository;
+	private final UserMoneyRepository userMoneyRepository;
 	
 	@Transactional
-	public Integer save(UserRequestDto requestDto) {
+	public Integer CreateUserWithMoneyInfo(UserRequestDto requestDto) {
 		UserEntity user =  userRepository.save(requestDto.toEntity()); // 유저 정보 저장
 
 		Calendar calendar = Calendar.getInstance(); // 유효기간 현재에서 +1개월로 설정 후 10000 포인트 저장
@@ -64,11 +67,16 @@ public class UserService {
 		List<CouponEntity> coupons = Arrays.asList(coupon1,coupon2,coupon3);
 		couponRepository.saveAll(coupons);
 		
+		userMoneyRepository.save(UserMoneyEntity.builder()// 적립금 0원 초기화
+				.user(user)
+				.fund(0)
+				.build());
+		
 		return user.getUserNumber();
 	}
 	
 	@Transactional(readOnly = true)
-	public List<UserResponseDto> findAll(){
+	public List<UserResponseDto> ReadUserList(){
 		return userRepository.findAll().stream()
 				.map(UserResponseDto::new)
 				.collect(Collectors.toList());

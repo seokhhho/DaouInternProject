@@ -10,6 +10,7 @@ import javax.persistence.OneToOne;
 
 import com.daou.daoushop.domain.user.UserEntity;
 
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -19,11 +20,14 @@ import lombok.NoArgsConstructor;
 public class UserMoneyEntity implements Serializable {
 	
 	@Id
+	@GeneratedValue
+	private Integer userMoneyId;
 	@OneToOne
 	@JoinColumn(name="user_number")
 	private UserEntity user;
 	private int fund;
 	
+	@Builder
 	public UserMoneyEntity(UserEntity user, int fund) {
 		this.user = user;
 		this.fund = fund;
