@@ -20,6 +20,6 @@ public class ProductController {
 	
 	@GetMapping(value = "/list")
 	public List<ProductResponseDto> findAll(){
-		return productService.ReadProductList();
+		return productService.readProductList();
 	}
 }

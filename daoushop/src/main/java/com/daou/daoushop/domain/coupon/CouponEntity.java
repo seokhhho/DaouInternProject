@@ -28,10 +28,11 @@ public class CouponEntity {
 	private UserEntity user;
 	@Enumerated(EnumType.STRING)
 	private DiscountRate discountRate;
-	private int isUsed;
+	@Enumerated(EnumType.STRING)
+	private IsUsed isUsed;
 	
 	@Builder
-	public CouponEntity(UserEntity user, DiscountRate discountRate, int isUsed) {
+	public CouponEntity(UserEntity user, DiscountRate discountRate, IsUsed isUsed) {
 		this.user = user;
 		this.discountRate = discountRate;
 		this.isUsed = isUsed;

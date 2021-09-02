@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.daou.daoushop.domain.coupon.CouponEntity;
 import com.daou.daoushop.domain.coupon.CouponRepository;
 import com.daou.daoushop.domain.coupon.DiscountRate;
+import com.daou.daoushop.domain.coupon.IsUsed;
 import com.daou.daoushop.domain.point.PointEntity;
 import com.daou.daoushop.domain.point.PointRepository;
 import com.daou.daoushop.domain.user.UserEntity;
@@ -35,7 +36,7 @@ public class UserService {
 	private final UserMoneyRepository userMoneyRepository;
 	
 	@Transactional
-	public Integer CreateUserWithMoneyInfo(UserRequestDto requestDto) {
+	public Integer createUserWithMoneyInfo(UserRequestDto requestDto) {
 		UserEntity user =  userRepository.save(requestDto.toEntity()); // 유저 정보 저장
 
 		Calendar calendar = Calendar.getInstance(); // 유효기간 현재에서 +1개월로 설정 후 10000 포인트 저장
@@ -52,17 +53,17 @@ public class UserService {
 		CouponEntity coupon1 = CouponEntity.builder()   //5,10,20프로  할인쿠폰 저장
 				.user(user)
 				.discountRate(DiscountRate.FIVE)
-				.isUsed(0)
+				.isUsed(IsUsed.FALSE)
 				.build();
 		CouponEntity coupon2 = CouponEntity.builder()
 				.user(user)
 				.discountRate(DiscountRate.TEN)
-				.isUsed(0)
+				.isUsed(IsUsed.FALSE)
 				.build();
 		CouponEntity coupon3 = CouponEntity.builder()
 				.user(user)
 				.discountRate(DiscountRate.TWENTY)
-				.isUsed(0)
+				.isUsed(IsUsed.FALSE)
 				.build();
 		List<CouponEntity> coupons = Arrays.asList(coupon1,coupon2,coupon3);
 		couponRepository.saveAll(coupons);
@@ -76,7 +77,7 @@ public class UserService {
 	}
 	
 	@Transactional(readOnly = true)
-	public List<UserResponseDto> ReadUserList(){
+	public List<UserResponseDto> readUserList(){
 		return userRepository.findAll().stream()
 				.map(UserResponseDto::new)
 				.collect(Collectors.toList());

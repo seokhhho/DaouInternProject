@@ -1,7 +1,5 @@
 package com.daou.daoushop.domain.userMoney;
 
-import java.io.Serializable;
-
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
@@ -17,7 +15,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Getter
 @Entity(name="user_money")
-public class UserMoneyEntity implements Serializable {
+public class UserMoneyEntity {
 	
 	@Id
 	@GeneratedValue

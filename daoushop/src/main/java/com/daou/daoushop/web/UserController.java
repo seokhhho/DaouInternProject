@@ -25,12 +25,12 @@ public class UserController {
 	
 	@PostMapping(value= "/join")
 	public Integer join(@RequestBody UserRequestDto requestDto) {
-		return userService.CreateUserWithMoneyInfo(requestDto);
+		return userService.createUserWithMoneyInfo(requestDto);
 	}
 	
 	@GetMapping(value = "/list")
 	public List<UserResponseDto> findAll(){
-		return userService.ReadUserList();
+		return userService.readUserList();
 	}
 	
 	
