@@ -16,6 +16,7 @@ import com.daou.daoushop.domain.product.ProductEntity;
 import com.daou.daoushop.domain.product.ProductRepository;
 import com.daou.daoushop.domain.user.UserEntity;
 import com.daou.daoushop.domain.user.UserRepository;
+import com.daou.daoushop.web.AutoPayInfo;
 import com.daou.daoushop.web.dto.OrderRequestDto;
 import com.daou.daoushop.web.dto.OrderResponseDto;
 import com.daou.daoushop.web.dto.ProductAmountDto;
@@ -37,7 +38,7 @@ public class OrderService {
 	@Transactional
 	public OrderResponseDto findAutoPayInfo(OrderRequestDto requestDto) {
 		
-		List<ProductAmountDto> products = requestDto.getProducts();
+		List<ProductAmountDto> buyedProducts = requestDto.getProducts();
 		
 		/*반환해 줄 객체 관련 데이터*/
 		int totalPrice = 0;
@@ -47,14 +48,17 @@ public class OrderService {
 		int usingFund = 0;
 		int pgPayMoney = 0;
 		
+		AutoPayInfo autoPayInfo = new AutoPayInfo(0,0,null,new ArrayList<>(),0,0);
+		
 		/*상품 정보를 통해 총 가격 구하기*/
-		for(ProductAmountDto p : products) {
+		for(ProductAmountDto p : buyedProducts) {
 			ProductEntity product = productRepository.findById(p.getProductId())
 					.orElseThrow(() -> new IllegalArgumentException( p.getProductId() +"번 상품이 존재 하지 않습니다."));
 			if(product.getStock() < p.getAmount()) {
 				throw new IllegalArgumentException("재고가 부족합니다.");
 			}
 			totalPrice += product.getPrice() * p.getAmount();
+//			autoPayInfo.setTotalPrice(autoPayInfo.getTotalPrice() + (product.getPrice() * p.getAmount()));
 		}
 		
 		/*유저 정보 불러오기*/

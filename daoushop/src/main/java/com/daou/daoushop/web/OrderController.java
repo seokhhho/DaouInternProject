@@ -18,7 +18,7 @@ public class OrderController {
 
 	private final OrderService orderService;
 	
-	@GetMapping(value = "/getAutoPay")
+	@GetMapping(value = "/autoPayInfo")
 	public OrderResponseDto findAutoPayInfo(@RequestBody OrderRequestDto requestDto) {
 		return orderService.findAutoPayInfo(requestDto);
 	}
