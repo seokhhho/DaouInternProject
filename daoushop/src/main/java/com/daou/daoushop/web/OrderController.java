@@ -16,10 +16,10 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/order")
 public class OrderController {
 
-//	private final OrderService orderService;
-//	
-//	@GetMapping(value = "/getAutoPay")
-//	public OrderResponseDto findAutoPayInfo(@RequestBody OrderRequestDto requestDto) {
-//		return orderService.findAutoPayInfo(requestDto);
-//	}
+	private final OrderService orderService;
+	
+	@GetMapping(value = "/getAutoPay")
+	public OrderResponseDto findAutoPayInfo(@RequestBody OrderRequestDto requestDto) {
+		return orderService.findAutoPayInfo(requestDto);
+	}
 }

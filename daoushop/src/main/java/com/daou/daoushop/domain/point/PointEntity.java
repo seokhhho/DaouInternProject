@@ -19,7 +19,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Getter
 @Entity(name="point")
-public class PointEntity {
+public class PointEntity implements Comparable<PointEntity> {
 
 	@Id
 	@GeneratedValue
@@ -31,12 +31,19 @@ public class PointEntity {
 	@DateTimeFormat
 	private String valid;
 	private int pointMoney;
+	private String pointName;
 
 	@Builder
-	public PointEntity(Integer pointId, UserEntity user, String valid, int pointMoney) {
+	public PointEntity(Integer pointId, UserEntity user, String valid, int pointMoney , String pointName) {
 		this.user = user;
 		this.valid = valid;
 		this.pointMoney = pointMoney;
+		this.pointName = pointName;
+	}
+
+	@Override
+	public int compareTo(PointEntity o) {
+		return this.valid.compareTo(o.valid);
 	}
 
 	

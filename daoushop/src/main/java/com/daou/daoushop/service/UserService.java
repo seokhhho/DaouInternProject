@@ -48,6 +48,7 @@ public class UserService {
 				.user(user)
 				.valid(valid)
 				.pointMoney(10000)
+				.pointName("가입기념 포인트")
 				.build());
 		
 		CouponEntity coupon1 = CouponEntity.builder()   //5,10,20프로  할인쿠폰 저장
@@ -67,12 +68,10 @@ public class UserService {
 				.build();
 		List<CouponEntity> coupons = Arrays.asList(coupon1,coupon2,coupon3);
 		couponRepository.saveAll(coupons);
-		
 		userMoneyRepository.save(UserMoneyEntity.builder()// 적립금 0원 초기화
 				.user(user)
 				.fund(0)
 				.build());
-		
 		return user.getUserNumber();
 	}
 	

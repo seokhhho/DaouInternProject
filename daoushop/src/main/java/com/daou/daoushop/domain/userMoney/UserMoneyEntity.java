@@ -1,5 +1,6 @@
 package com.daou.daoushop.domain.userMoney;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
@@ -27,7 +28,7 @@ public class UserMoneyEntity {
 	
 	@Builder
 	public UserMoneyEntity(UserEntity user, int fund) {
-		this.user = user;
+		this.user = user; 
 		this.fund = fund;
 	}
 	
