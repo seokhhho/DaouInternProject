@@ -3,6 +3,7 @@ import VueRouter from "vue-router";
 import Main from "../views/Main.vue";
 import Join from "../views/Join.vue";
 import UserList from "../views/UserList.vue";
+import BuyProduct from "../views/BuyProduct.vue";
 Vue.use(VueRouter);
 
 const routes = [
@@ -20,6 +21,11 @@ const routes = [
     path: "/userList",
     name: "UserList",
     component: UserList,
+  },
+  {
+    path: "/buyProduct",
+    name: "BuyProduct",
+    component: BuyProduct,
   },
   {
     path: "/about",
