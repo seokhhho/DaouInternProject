@@ -2,7 +2,6 @@ package com.daou.daoushop.web;
 
 import java.util.List;
 
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -12,7 +11,6 @@ import com.daou.daoushop.web.dto.ProductResponseDto;
 
 import lombok.RequiredArgsConstructor;
 
-@CrossOrigin(origins = "http://localhost:8080")
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/product")
