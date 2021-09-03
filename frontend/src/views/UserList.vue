@@ -28,6 +28,7 @@
           color="primary"
           dark
           style="margin-left:10%;"
+          @click="moveToBuyProduct"
         >
           상품구매
         </v-btn>
@@ -74,6 +75,9 @@ export default {
           .catch(function(error) {
             console.log(error);
           });
+      },
+      moveToBuyProduct(){
+        this.$router.push("/buyProduct");
       }
   }
 };
@@ -82,8 +86,8 @@ export default {
 <style>
 .user-table{
     /* text-align: center; */
-    margin-left: 35%;
-    margin-right: 38%;
+    margin-left: 30%;
+    margin-right: 30%;
     margin-top: 5%;
 }
 </style>
