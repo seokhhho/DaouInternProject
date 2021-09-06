@@ -5,6 +5,7 @@ import Join from "../views/Join.vue";
 import UserList from "../views/UserList.vue";
 import BuyProduct from "../views/BuyProduct.vue";
 import Pay from "../views/Pay.vue";
+import FinishedPay from "../views/FinishedPay.vue";
 Vue.use(VueRouter);
 
 const routes = [
@@ -32,6 +33,12 @@ const routes = [
     path: "/pay",
     name: "Pay",
     component: Pay,
+    props: true,
+  },
+  {
+    path: "/finishedPay",
+    name: "FinishedPay",
+    component: FinishedPay,
     props: true,
   },
   {

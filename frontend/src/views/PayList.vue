@@ -1,10 +1,11 @@
 <template>
   <div class="main">
-    <h3 style="margin-top:3% ; margin-left:3%">{{this.userName}}님 반갑습니다.
+      <h3 style="margin-top:3% ; margin-left:3%">{{this.userName}}님 반갑습니다.
       <v-btn @click="moveToMain" style="float : right ; margin-right:5%">메인 페이지</v-btn>
     </h3>
-    <div class="main-title">상품 구매</div>
-    <div class = "cards-dummy">
+    
+    <div class="main-title">결제 내역</div>
+    <div>
     <div v-for="(item,index) in list"
             :key="index"
             class="product-card"
@@ -12,13 +13,7 @@
     
      <v-card
       class="mx-auto"
-      
     >
-      <!-- <v-img
-        src="https://cdn.vuetifyjs.com/images/cards/sunshine.jpg"
-        height="200px"
-      ></v-img> -->
-  
       <v-card-title>
        {{item.productName}}
       </v-card-title>
@@ -28,29 +23,6 @@
       <v-btn Primary class="cart-plus-btn" @click="plusCart(item,index)">
         추가
       </v-btn>
-         <!-- <v-btn
-        class="mx-2"
-        fab
-        dark
-        x-small
-        color="primary"
-        @click="plusAmount(index)"
-      >
-        <v-icon dark>
-          mdi-plus
-        </v-icon>
-      </v-btn> -->
-      <!-- <v-btn
-        class="mx-2"
-        fab
-        dark
-        x-small
-        color="primary"
-      >
-        <v-icon dark>
-          mdi-minus
-        </v-icon>
-      </v-btn> -->
       </v-card-subtitle>
     </v-card>
     </div>
@@ -79,14 +51,11 @@ export default {
         return {
           list: [],
           cart_list:[],
-          userName :'',
-          userNumber : 0,
         };
     },
     created(){
       this.getList();
-      this.userName = localStorage.getItem('userName');
-      this.userNumber = localStorage.getItem('userNumber');
+      // localStorage.setItem('userNumber', 'ss');
     },
   components: {
     VueNumericInput
@@ -129,25 +98,5 @@ export default {
 </script>
 
 <style>
-.product-card{
-    /* text-align: center; */
-    float : left;
-    margin-left: 5%;
-    margin-top: 2%;
-    cursor:pointer ;
-}
-.cards-dummy{
-  margin-top: 5%;
-  margin-right: 20%;
-}
-.cart{
-  float: right;
-  margin-right: 5%;
-  /* background-color: blue; */
-}
-.cart-plus-btn{
-  margin-left: 30%;
-  width: 15%;
-  
-}
+
 </style>

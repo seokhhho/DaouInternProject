@@ -6,17 +6,18 @@ import lombok.Builder;
 import lombok.Getter;
 
 @Getter
-public class BalanceResponseDto {
-
+public class OrderBalanceResponseDto {
+	
 	private List<CouponDto> coupons;
 	private List<PointDto> points;
 	private int fund;
 	
 	@Builder
-	public BalanceResponseDto(List<PointDto> points, List<CouponDto> coupons, int fund) {
+	public OrderBalanceResponseDto(List<PointDto> points, List<CouponDto> coupons, int fund) {
 		this.points = points;
 		this.coupons = coupons;
 		this.fund = fund;
 	}
+	
 	
 }

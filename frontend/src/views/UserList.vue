@@ -1,7 +1,8 @@
 <template>
   <div class="main">
-    <!-- <img alt="Vue logo" src="../assets/logo.png" /> -->
-    <!-- <HelloWorld/> -->
+    
+      <v-btn @click="moveToMain" style="float : right ; margin-right:5%">메인 페이지</v-btn>
+    
     <div class="main-title">회원 리스트</div>
     <div class ="user-table">
     <v-simple-table>
@@ -28,7 +29,7 @@
           color="primary"
           dark
           style="margin-left:10%;"
-          @click="moveToBuyProduct"
+          @click="moveToBuyProduct(item)"
         >
           상품구매
         </v-btn>
@@ -76,9 +77,14 @@ export default {
             console.log(error);
           });
       },
-      moveToBuyProduct(){
+      moveToBuyProduct(item){
+        localStorage.setItem('userNumber', item.userNumber);
+        localStorage.setItem('userName', item.name);
         this.$router.push("/buyProduct");
-      }
+      },
+      moveToMain(){
+      this.$router.push("/");
+    }
   }
 };
 </script>

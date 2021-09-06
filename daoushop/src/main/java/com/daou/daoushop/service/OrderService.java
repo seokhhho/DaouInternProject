@@ -1,8 +1,12 @@
 package com.daou.daoushop.service;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import org.springframework.stereotype.Service;
@@ -10,16 +14,30 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.daou.daoushop.domain.coupon.CouponEntity;
 import com.daou.daoushop.domain.coupon.CouponRepository;
+import com.daou.daoushop.domain.payedProduct.PayedProductEntity;
+import com.daou.daoushop.domain.payedProduct.PayedProductRepository;
+import com.daou.daoushop.domain.payment.PaymentEntity;
+import com.daou.daoushop.domain.payment.PaymentRepository;
 import com.daou.daoushop.domain.point.PointEntity;
 import com.daou.daoushop.domain.point.PointRepository;
 import com.daou.daoushop.domain.product.ProductEntity;
 import com.daou.daoushop.domain.product.ProductRepository;
+import com.daou.daoushop.domain.usedPoint.UsedPointEntity;
+import com.daou.daoushop.domain.usedPoint.UsedPointRepository;
 import com.daou.daoushop.domain.user.UserEntity;
 import com.daou.daoushop.domain.user.UserRepository;
+import com.daou.daoushop.domain.userMoney.UserMoneyEntity;
+import com.daou.daoushop.domain.userMoney.UserMoneyRepository;
 import com.daou.daoushop.web.AutoPayInfo;
+import com.daou.daoushop.web.dto.CouponDto;
+import com.daou.daoushop.web.dto.OrderBalanceResponseDto;
 import com.daou.daoushop.web.dto.OrderRequestDto;
 import com.daou.daoushop.web.dto.OrderResponseDto;
+import com.daou.daoushop.web.dto.PayRequestDto;
+import com.daou.daoushop.web.dto.PaymentResponseDto;
+import com.daou.daoushop.web.dto.PointDto;
 import com.daou.daoushop.web.dto.ProductAmountDto;
+import com.daou.daoushop.web.dto.UsedPointDto;
 import com.daou.daoushop.web.dto.UsingPointDto;
 
 import lombok.RequiredArgsConstructor;
@@ -32,6 +50,10 @@ public class OrderService {
 	private final UserRepository userRepository;
 	private final PointRepository pointRepository;
 	private final CouponRepository couponRepository;
+	private final UserMoneyRepository userMoneyRepository;
+	private final PaymentRepository paymentRepository;
+	private final PayedProductRepository payedProductRepository;
+	private final UsedPointRepository usedPointRepository;
 	
 	
 	/*자동 결제 시 결제 정보 가져오기*/
@@ -42,7 +64,7 @@ public class OrderService {
 		
 		/*반환해 줄 객체 관련 데이터*/
 		int totalPrice = 0;
-		int discountedPrice = 0;
+		int discountedPrice = 10;
 		CouponEntity usingCoupon = null;
 		List<UsingPointDto> usingPoints = new ArrayList<>();
 		int usingFund = 0;
@@ -92,24 +114,31 @@ public class OrderService {
 		
 		int remainMoney = discountedPrice;
 		
+		Calendar calendar = Calendar.getInstance();
+		Date validDay = calendar.getTime();
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		String valid = sdf.format(validDay);
+		
 		for(PointEntity p : points) {
-			if(p.getPointMoney() >= remainMoney) {
-				usingPoints.add(UsingPointDto.builder()
-						.pointId(p.getPointId())
-						.valid(p.getValid())
-						.usingMoney(remainMoney)
-						.pointName(p.getPointName())
-						.build());
-				remainMoney = 0;
-				break;
-			}else {
-				usingPoints.add(UsingPointDto.builder()
-						.pointId(p.getPointId())
-						.valid(p.getValid())
-						.usingMoney(p.getPointMoney())
-						.pointName(p.getPointName())
-						.build());
-				remainMoney -= p.getPointMoney();
+			if(p.getPointMoney() > 0 && p.getValid().compareTo(valid) > 0) {
+				if(p.getPointMoney() >= remainMoney) {
+					usingPoints.add(UsingPointDto.builder()
+							.pointId(p.getPointId())
+							.valid(p.getValid())
+							.usingMoney(remainMoney)
+							.pointName(p.getPointName())
+							.build());
+					remainMoney = 0;
+					break;
+				}else {
+					usingPoints.add(UsingPointDto.builder()
+							.pointId(p.getPointId())
+							.valid(p.getValid())
+							.usingMoney(p.getPointMoney())
+							.pointName(p.getPointName())
+							.build());
+					remainMoney -= p.getPointMoney();
+				}
 			}
 		}
 		
@@ -127,15 +156,166 @@ public class OrderService {
 		/*남은 돈 있을 시 결제금액*/
 		pgPayMoney = remainMoney;
 		
-		return OrderResponseDto.builder()
+		if(usingCoupon == null) {
+			return OrderResponseDto.builder()
 				.totalPrice(totalPrice)
 				.discountedPrice(discountedPrice)
-				.couponId(usingCoupon.getCouponId())
-				.discountRate(usingCoupon.getDiscountRate().getRate())
 				.usingPoints(usingPoints)
 				.usingFund(usingFund)
 				.pgPayMoney(pgPayMoney)
 				.build();
+		}
+		else {
+			return OrderResponseDto.builder()
+					.totalPrice(totalPrice)
+					.discountedPrice(discountedPrice)
+					.couponId(usingCoupon.getCouponId())
+					.couponName(usingCoupon.getCouponName())
+					.discountRate(usingCoupon.getDiscountRate().getRate())
+					.usingPoints(usingPoints)
+					.usingFund(usingFund)
+					.pgPayMoney(pgPayMoney)
+					.build();
+		}
+	}
+
+	@Transactional
+	public OrderBalanceResponseDto autoPay(PayRequestDto requestDto) {
+		
+		UserEntity user = userRepository.findById(requestDto.getUserNumber())
+				.orElseThrow(() -> new IllegalArgumentException( "해당 유저가 존재 하지 않습니다."));
+		CouponEntity coupon = null;
+		if(requestDto.getCouponId() != 0) {
+			coupon = couponRepository.findById(requestDto.getCouponId())
+					.orElseThrow(() -> new IllegalArgumentException( "해당 쿠폰이 존재 하지 않습니다."));
+			coupon.usingCoupon();
+			couponRepository.save(coupon);
+		}
+
+		
+		for(UsingPointDto p : requestDto.getUsingPoints()) {
+			PointEntity point = pointRepository.findById(p.getPointId())
+					.orElseThrow(() -> new IllegalArgumentException( "해당 포인트가 존재 하지 않습니다."));
+			point.deduct(p.getUsingMoney());
+			pointRepository.save(point);
+		}
+		
+		UserMoneyEntity userMoney = user.getUserMoney();
+		userMoney.deduct(requestDto.getUsingFund());
+		userMoneyRepository.save(userMoney);
+		PaymentEntity payment;
+		if(coupon == null) {
+			payment =PaymentEntity.builder()
+					.user(user)
+					.usedFund(requestDto.getUsingFund())
+					.usedMoney(requestDto.getPgPayMoney())
+					.build();
+		}else {
+			payment =PaymentEntity.builder()
+					.user(user)
+					.coupon(coupon)
+					.usedFund(requestDto.getUsingFund())
+					.usedMoney(requestDto.getPgPayMoney())
+					.build();
+		}
+		
+		paymentRepository.save(payment);
+		
+		for(ProductAmountDto buyedProductInfo :requestDto.getProducts()) {
+			 ProductEntity buyedProduct =  productRepository.findById(buyedProductInfo.getProductId())
+						.orElseThrow(() -> new IllegalArgumentException( "해당 상품이 존재 하지 않습니다."));
+			 buyedProduct.buyProduct(buyedProductInfo.getAmount());
+			 
+			 payedProductRepository.save(PayedProductEntity.builder()
+					 .payment(payment)
+					 .product(buyedProduct)
+					 .amount(buyedProductInfo.getAmount())
+					 .build());
+		}
+		
+		for(UsingPointDto p : requestDto.getUsingPoints()) {
+			PointEntity point = pointRepository.findById(p.getPointId())
+					.orElseThrow(() -> new IllegalArgumentException( "해당 포인트가 존재 하지 않습니다."));
+			usedPointRepository.save(UsedPointEntity.builder()
+					.payment(payment)
+					.point(point)
+					.usedMoney(p.getUsingMoney())
+					.build());
+		}
+		
+		
+		
+		Set<CouponEntity> coupons = user.getCoupons();
+		List<CouponDto> couponsDto = new ArrayList<CouponDto>();
+		for(CouponEntity c : coupons) {
+			if(!c.getIsUsed().isUsed()) {
+				couponsDto.add(CouponDto.builder()
+						.couponId(c.getCouponId())
+						.discountRate(c.getDiscountRate().getRate())
+						.couponName(c.getCouponName())
+						.minPrice(c.getDiscountRate().getMinPrice())
+						.build());
+			}
+		}
+		
+		
+		Set<PointEntity> pointsSet = user.getPoints();
+		List<PointEntity> points = new ArrayList<PointEntity>(pointsSet);
+		Collections.sort(points);
+		
+		Calendar calendar = Calendar.getInstance();
+		Date validDay = calendar.getTime();
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		String valid = sdf.format(validDay);
+		
+		List<PointDto> pointsDto = new ArrayList<PointDto>();
+		for(PointEntity p : points) {
+			if(p.getPointMoney() > 0 && p.getValid().compareTo(valid) > 0) {
+			pointsDto.add(PointDto.builder()
+					.pointId(p.getPointId())
+					.valid(p.getValid())
+					.pointMoney(p.getPointMoney())
+					.pointName(p.getPointName())
+					.build());
+			}
+		}
+		
+		int fund = user.getUserMoney().getFund();
+		
+		return OrderBalanceResponseDto.builder()
+				.coupons(couponsDto)
+				.points(pointsDto)
+				.fund(fund)
+				.build();
+	}
+
+	@Transactional
+	public List<PaymentResponseDto> payList(Integer userNumber) {
+		
+		UserEntity user = userRepository.findById(userNumber)
+				.orElseThrow(() -> new IllegalArgumentException( "해당 유저가 존재 하지 않습니다."));
+		
+		Set<PaymentEntity> payments = user.getPayments();
+		List<PaymentResponseDto> paymentsDto;
+		
+		for(PaymentEntity p : payments) {
+			CouponEntity coupon = p.getCoupon();
+			Set<UsedPointEntity> usedPointsSet = p.getUsedPoints();
+			Set<PayedProductEntity> productsSet = p.getPayedProducts();
+			List<UsedPointDto> usedPoints = new ArrayList<UsedPointDto>();
+			for(UsedPointEntity usedP : usedPointsSet) {
+				usedPoints.add(UsedPointDto.builder()
+						.usedPointId(usedP.getUsedPointId())
+						.pointId(usedP.getPoint().getPointId())
+						.usedMoney(usedP.getUsedMoney())
+						.pointName(usedP.getPoint().getPointName())
+						.valid(usedP.getPoint().getValid())
+						.build());
+			}
+			
+			
+		}
+		return null;
 	}
 
 }

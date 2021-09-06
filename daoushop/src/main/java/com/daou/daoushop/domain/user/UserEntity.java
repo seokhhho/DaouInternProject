@@ -11,6 +11,7 @@ import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 
 import com.daou.daoushop.domain.coupon.CouponEntity;
+import com.daou.daoushop.domain.payment.PaymentEntity;
 import com.daou.daoushop.domain.point.PointEntity;
 import com.daou.daoushop.domain.userMoney.UserMoneyEntity;
 
@@ -37,6 +38,9 @@ public class UserEntity {
 
 	@OneToOne(mappedBy = "user")
 	private UserMoneyEntity userMoney;
+	
+	@OneToMany(mappedBy = "user")
+	private Set<PaymentEntity> payments = new HashSet<>();
 	
 	@Builder
 	public UserEntity(String id, String name) {

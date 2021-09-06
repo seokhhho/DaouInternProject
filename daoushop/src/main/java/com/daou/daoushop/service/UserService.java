@@ -1,10 +1,13 @@
 package com.daou.daoushop.service;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 
@@ -21,6 +24,9 @@ import com.daou.daoushop.domain.user.UserEntity;
 import com.daou.daoushop.domain.user.UserRepository;
 import com.daou.daoushop.domain.userMoney.UserMoneyEntity;
 import com.daou.daoushop.domain.userMoney.UserMoneyRepository;
+import com.daou.daoushop.web.dto.BalanceResponseDto;
+import com.daou.daoushop.web.dto.CouponDto;
+import com.daou.daoushop.web.dto.PointDto;
 import com.daou.daoushop.web.dto.UserRequestDto;
 import com.daou.daoushop.web.dto.UserResponseDto;
 
@@ -55,16 +61,19 @@ public class UserService {
 				.user(user)
 				.discountRate(DiscountRate.FIVE)
 				.isUsed(IsUsed.FALSE)
+				.couponName("가입기념 5% 할인 쿠폰")
 				.build();
 		CouponEntity coupon2 = CouponEntity.builder()
 				.user(user)
 				.discountRate(DiscountRate.TEN)
 				.isUsed(IsUsed.FALSE)
+				.couponName("가입기념 10% 할인 쿠폰")
 				.build();
 		CouponEntity coupon3 = CouponEntity.builder()
 				.user(user)
 				.discountRate(DiscountRate.TWENTY)
 				.isUsed(IsUsed.FALSE)
+				.couponName("가입기념 20% 할인 쿠폰")
 				.build();
 		List<CouponEntity> coupons = Arrays.asList(coupon1,coupon2,coupon3);
 		couponRepository.saveAll(coupons);
@@ -80,5 +89,56 @@ public class UserService {
 		return userRepository.findAll().stream()
 				.map(UserResponseDto::new)
 				.collect(Collectors.toList());
+	}
+
+	@Transactional(readOnly = true)
+	public BalanceResponseDto findBalance(Integer userNumber) {
+		
+		UserEntity user = userRepository.findById(userNumber)
+				.orElseThrow(() -> new IllegalArgumentException( "해당 유저가 존재 하지 않습니다."));
+		
+		Set<CouponEntity> coupons = user.getCoupons();
+		List<CouponDto> couponsDto = new ArrayList<CouponDto>();
+		for(CouponEntity c : coupons) {
+			if(!c.getIsUsed().isUsed()) {
+				couponsDto.add(CouponDto.builder()
+						.couponId(c.getCouponId())
+						.discountRate(c.getDiscountRate().getRate())
+						.couponName(c.getCouponName())
+						.minPrice(c.getDiscountRate().getMinPrice())
+						.build());
+			}
+		}
+		
+		
+		Set<PointEntity> pointsSet = user.getPoints();
+		List<PointEntity> points = new ArrayList<PointEntity>(pointsSet);
+		Collections.sort(points);
+		
+		List<PointDto> pointsDto = new ArrayList<PointDto>();
+		
+		Calendar calendar = Calendar.getInstance();
+		Date validDay = calendar.getTime();
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		String valid = sdf.format(validDay);
+		
+		for(PointEntity p : points) {
+			if(p.getPointMoney() > 0 && p.getValid().compareTo(valid) > 0) {
+			pointsDto.add(PointDto.builder()
+					.pointId(p.getPointId())
+					.valid(p.getValid())
+					.pointMoney(p.getPointMoney())
+					.pointName(p.getPointName())
+					.build());
+			}
+		}
+		
+		int fund = user.getUserMoney().getFund();
+		
+		return BalanceResponseDto.builder()
+				.coupons(couponsDto)
+				.points(pointsDto)
+				.fund(fund)
+				.build();
 	}
 }

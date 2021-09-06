@@ -19,10 +19,10 @@ public class CouponRepositoryTest {
 	@Autowired
 	CouponRepository couponRepository;
 	
-	@AfterEach
-	public void cleanup() {
-		couponRepository.deleteAll();
-	}
+//	@AfterEach
+//	public void cleanup() {
+//		couponRepository.deleteAll();
+//	}
 	
 //	@Test
 //	@DisplayName("쿠폰 엔티티 저장 테스트")
@@ -48,4 +48,13 @@ public class CouponRepositoryTest {
 //		assertThat(coupon.getDiscountRate());
 //		assertThat(coupon.getMinAmount());
 //	}
+	
+	@Test
+	public void usingCoupon() {
+		CouponEntity coupon = couponRepository.findById(1009)
+				.orElseThrow(() -> new IllegalArgumentException( "해당 쿠폰이 존재 하지 않습니다."));
+		coupon.usingCoupon();
+		couponRepository.save(coupon);
+		assertThat(coupon.getIsUsed());
+	}
 }

@@ -32,4 +32,9 @@ public class UserMoneyEntity {
 		this.fund = fund;
 	}
 	
+	public int deduct(int usingFund) {
+		this.fund -= usingFund;
+		return fund;
+	}
+	
 }
