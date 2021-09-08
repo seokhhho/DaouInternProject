@@ -40,5 +40,10 @@ public class ProductEntity {
 		this.stock -= amount;
 		return stock;
 	}
+
+	public int giveBackProduct(int amount) {
+		this.stock += amount;
+		return stock;		
+	}
 	
 }

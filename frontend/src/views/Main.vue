@@ -26,6 +26,7 @@
         color="primary"
         dark
         id="myMoney"
+        @click="myBalance"
       >
         내 보유금액
       </v-btn>
@@ -60,6 +61,9 @@ export default {
     },
     buyProduct(){
       this.$router.push("/buyProduct");
+    },
+    myBalance(){
+      this.$router.push("/myBalance");
     }
   }
 };

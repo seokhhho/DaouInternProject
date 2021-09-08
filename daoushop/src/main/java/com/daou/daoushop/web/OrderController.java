@@ -16,6 +16,7 @@ import com.daou.daoushop.web.dto.OrderRequestDto;
 import com.daou.daoushop.web.dto.OrderResponseDto;
 import com.daou.daoushop.web.dto.PayRequestDto;
 import com.daou.daoushop.web.dto.PaymentResponseDto;
+import com.daou.daoushop.web.dto.RefundResponseDto;
 
 import lombok.RequiredArgsConstructor;
 
@@ -34,12 +35,16 @@ public class OrderController {
 	
 	@PutMapping(value = "/autoPay")
 	public OrderBalanceResponseDto autoPay(@RequestBody PayRequestDto requestDto) {
-		//System.out.println("**************" + requestDto.getCouponId() + "*******"+requestDto.getDiscountedPrice());
 		return orderService.autoPay(requestDto);
 	}
 	
 	@GetMapping(value = "list/{userNumber}")
 	public List<PaymentResponseDto> payList(@PathVariable Integer userNumber) {
 		return orderService.payList(userNumber);
+	}
+	
+	@GetMapping(value = "/refund/{paymentId}")
+	public RefundResponseDto refund(@PathVariable Integer paymentId) {
+		return orderService.refund(paymentId);
 	}
 }

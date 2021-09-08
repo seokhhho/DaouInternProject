@@ -59,5 +59,11 @@ public class PointEntity implements Comparable<PointEntity> {
 		return this.valid.compareTo(o.valid);
 	}
 
+	public int deposit(int usedMoney) {
+		this.pointMoney += usedMoney;
+		return pointMoney;
+		
+	}
+
 	
 }

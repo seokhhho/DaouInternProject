@@ -85,10 +85,10 @@
             type="number"
             v-model="selectedPoints[idx]"
             v-on:change="getTotal"
-            :rules="pointsRule[idx].rule"/>
+            />
       </div>
       </div>
-
+<!-- :rules="pointsRule[idx].rule" -->
       적립금 (잔여 : {{balanceFund}}원)<v-text-field 
       type="number"
       v-model="selectedFund"
@@ -101,7 +101,8 @@
       type="number"/>
       <div style="margin-top:3%;">총액 : {{this.selectedTotal}}원
         <v-btn @click="selectedPay" class="select-pay-btn" style="margin-top:-1%">결제하기</v-btn>
-        <div v-if="!canSelectedPay" class="pay-match-message">결제 금액을 맞춰 주세요.</div>
+        <!-- <div v-if="!canSelectedPay" class="pay-match-message">결제 금액을 맞춰 주세요.</div>
+        <div v-if="!isValidFund" class="pay-match-message">적립금을 확인 해 주세요.</div> -->
       </div>
 
 
@@ -151,6 +152,8 @@ export default {
           selectedFund : 0,
           selectedPG : 0,
           selectedTotal : 0,
+          isValidFund : true,
+          isValidPoint : true,
         };
     },
   created(){
@@ -183,7 +186,6 @@ export default {
           this.pgPayMoney = response.data.pgPayMoney;
         })
         .catch(function(error) {
-            alert("에러");
           console.log(error);
         });
     },
@@ -272,56 +274,79 @@ export default {
       for(var index in this.selectedPoints){
         this.selectedTotal += parseInt(this.selectedPoints[index]);
       }
-      this.selectedTotal += (parseInt(this.selectedFund) + parseInt(this.selectedPG)); 
+      this.selectedTotal += (parseInt(this.selectedFund) + parseInt(this.selectedPG));
+      // if(this.selectedTotal == this.selectedDiscountedPrice) {
+      //   this.canSelectedPay == true;
+      // }else{
+      //   this.canSelectedPay == false;
+      // }
+
+      
     },
     selectedPay(){
-      if(this.selectedTotal == this.selectedDiscountedPrice){
-        if(confirm("결제하시겠습니까?")){
-          // this.selectedUsingPoints = this.usingPoints;
-          for(var sIdx in this.balancePoints){
-            this.selectedUsingPoints[sIdx] = {
-              usingMoney :this.selectedPoints[sIdx],
-              pointId : this.balancePoints[sIdx].pointId,
-              valid : this.balancePoints[sIdx].valid,
-              pointName : this.balancePoints[sIdx].pointName
+      this.isValidPoint = true;
+      this.isValidFund = true;
+      for(var idx in this.balancePoints){
+        if(this.balancePoints[idx].pointMoney < this.selectedPoints[idx]){
+          this.isValidPoint = false;
+          alert("포인트를 확인 해 주세요.");
+        }
+      }
+      if(this.isValidPoint){
+        if(this.selectedFund > this.balanceFund){
+          alert("적립금을 확인 해 주세요.");
+          this.isValidFund = false;
+        }else{
+          if(this.selectedTotal == this.selectedDiscountedPrice){
+            if(confirm("결제하시겠습니까?")){
+              // this.selectedUsingPoints = this.usingPoints;
+              for(var sIdx in this.balancePoints){
+                this.selectedUsingPoints[sIdx] = {
+                  usingMoney :this.selectedPoints[sIdx],
+                  pointId : this.balancePoints[sIdx].pointId,
+                  valid : this.balancePoints[sIdx].valid,
+                  pointName : this.balancePoints[sIdx].pointName
+                }
+              }
+              // alert(this.selectedUsingPoints[0].usingMoney);
+              // alert(this.selectedUsingPoints[1].usingMoney);
+              this.payForm = {
+              totalPrice : this.totalPrice,
+              discountedPrice : this.selectedDiscountedPrice,
+              couponId : this.usingCoupon.couponId,
+              usingPoints :this.selectedUsingPoints,
+              usingFund : this.selectedFund,
+              pgPayMoney : this.selectedPG,
+              userNumber : this.userNumber,
+              products : this.products
             }
+            axios
+              .put(`http://localhost:8088/order/autoPay`,this.payForm)
+              .then((response) => {
+                this.$router.push({name:'FinishedPay' ,params : {totalPrice : this.totalPrice,
+              discountedPrice : this.selectedDiscountedPrice,
+              couponId : this.usingCoupon.couponId,
+              couponName : this.usingCoupon.couponName,
+              usingPoints :this.selectedUsingPoints,
+              usingFund : this.selectedFund,
+              pgPayMoney : this.selectedPG,
+              userNumber : this.userNumber,
+              products : this.products,
+              balanceCoupons : response.data.coupons,
+              balancePoints : response.data.points,
+              balanceFund : response.data.fund,
+              }});
+              })
+              .catch(function(error) {
+                  alert("에러");
+                console.log(error);
+              });
+            }
+          }else{
+            alert("총액과 할인적용금액을 맞춰 주세요.");
+            this.canSelectedPay = false;
           }
-          alert(this.selectedUsingPoints[0].usingMoney);
-          alert(this.selectedUsingPoints[1].usingMoney);
-          this.payForm = {
-          totalPrice : this.totalPrice,
-          discountedPrice : this.selectedDiscountedPrice,
-          couponId : this.usingCoupon.couponId,
-          usingPoints :this.selectedUsingPoints,
-          usingFund : this.selectedFund,
-          pgPayMoney : this.selectedPG,
-          userNumber : this.userNumber,
-          products : this.products
         }
-        axios
-          .put(`http://localhost:8088/order/autoPay`,this.payForm)
-          .then((response) => {
-            this.$router.push({name:'FinishedPay' ,params : {totalPrice : this.totalPrice,
-          discountedPrice : this.selectedDiscountedPrice,
-          couponId : this.usingCoupon.couponId,
-          couponName : this.usingCoupon.couponName,
-          usingPoints :this.selectedUsingPoints,
-          usingFund : this.selectedFund,
-          pgPayMoney : this.selectedPG,
-          userNumber : this.userNumber,
-          products : this.products,
-          balanceCoupons : response.data.coupons,
-          balancePoints : response.data.points,
-          balanceFund : response.data.fund,
-          }});
-          })
-          .catch(function(error) {
-              alert("에러");
-            console.log(error);
-          });
-        }
-      }else{
-        this.canSelectedPay = false;
       }
     },
     moveToMain(){

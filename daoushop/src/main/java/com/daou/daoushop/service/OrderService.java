@@ -29,11 +29,13 @@ import com.daou.daoushop.domain.user.UserRepository;
 import com.daou.daoushop.domain.userMoney.UserMoneyEntity;
 import com.daou.daoushop.domain.userMoney.UserMoneyRepository;
 import com.daou.daoushop.web.AutoPayInfo;
+import com.daou.daoushop.web.dto.RefundResponseDto;
 import com.daou.daoushop.web.dto.CouponDto;
 import com.daou.daoushop.web.dto.OrderBalanceResponseDto;
 import com.daou.daoushop.web.dto.OrderRequestDto;
 import com.daou.daoushop.web.dto.OrderResponseDto;
 import com.daou.daoushop.web.dto.PayRequestDto;
+import com.daou.daoushop.web.dto.PayedProductDto;
 import com.daou.daoushop.web.dto.PaymentResponseDto;
 import com.daou.daoushop.web.dto.PointDto;
 import com.daou.daoushop.web.dto.ProductAmountDto;
@@ -117,10 +119,10 @@ public class OrderService {
 		Calendar calendar = Calendar.getInstance();
 		Date validDay = calendar.getTime();
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-		String valid = sdf.format(validDay);
+		String now = sdf.format(validDay);
 		
 		for(PointEntity p : points) {
-			if(p.getPointMoney() > 0 && p.getValid().compareTo(valid) > 0) {
+			if(p.getPointMoney() > 0 && p.getValid().compareTo(now) > 0) {
 				if(p.getPointMoney() >= remainMoney) {
 					usingPoints.add(UsingPointDto.builder()
 							.pointId(p.getPointId())
@@ -184,6 +186,7 @@ public class OrderService {
 		
 		UserEntity user = userRepository.findById(requestDto.getUserNumber())
 				.orElseThrow(() -> new IllegalArgumentException( "해당 유저가 존재 하지 않습니다."));
+		
 		CouponEntity coupon = null;
 		if(requestDto.getCouponId() != 0) {
 			coupon = couponRepository.findById(requestDto.getCouponId())
@@ -296,13 +299,15 @@ public class OrderService {
 				.orElseThrow(() -> new IllegalArgumentException( "해당 유저가 존재 하지 않습니다."));
 		
 		Set<PaymentEntity> payments = user.getPayments();
-		List<PaymentResponseDto> paymentsDto;
+		List<PaymentResponseDto> paymentsDto = new ArrayList<PaymentResponseDto>();
 		
 		for(PaymentEntity p : payments) {
+			
 			CouponEntity coupon = p.getCoupon();
 			Set<UsedPointEntity> usedPointsSet = p.getUsedPoints();
 			Set<PayedProductEntity> productsSet = p.getPayedProducts();
 			List<UsedPointDto> usedPoints = new ArrayList<UsedPointDto>();
+			
 			for(UsedPointEntity usedP : usedPointsSet) {
 				usedPoints.add(UsedPointDto.builder()
 						.usedPointId(usedP.getUsedPointId())
@@ -313,9 +318,121 @@ public class OrderService {
 						.build());
 			}
 			
+			List<PayedProductDto> payedProducts = new ArrayList<PayedProductDto>();
+			for(PayedProductEntity payedP : productsSet) {
+				payedProducts.add(PayedProductDto.builder()
+						.payedProductId(payedP.getPayedProductId())
+						.productId(payedP.getProduct().getProductId())
+						.productName(payedP.getProduct().getProductName())
+						.amount(payedP.getAmount())
+						.build());
+			}
+			
+			if(coupon == null) {
+				paymentsDto.add(PaymentResponseDto.builder()
+						.paymentId(p.getPaymentId())
+						.usedFund(p.getUsedFund())
+						.usedMoney(p.getUsedMoney())
+						.usedPoints(usedPoints)
+						.payedProducts(payedProducts)
+						.build());
+			}else {
+				paymentsDto.add(PaymentResponseDto.builder()
+						.paymentId(p.getPaymentId())
+						.couponId(coupon.getCouponId())
+						.couponName(coupon.getCouponName())
+						.usedFund(p.getUsedFund())
+						.usedMoney(p.getUsedMoney())
+						.usedPoints(usedPoints)
+						.payedProducts(payedProducts)
+						.build());
+			}
 			
 		}
-		return null;
+		return paymentsDto;
+	}
+
+	@Transactional
+	public RefundResponseDto refund(Integer paymentId) {
+		
+		PaymentEntity payment = paymentRepository.getById(paymentId);
+		
+		UserEntity user = userRepository.findById(payment.getUser().getUserNumber())
+				.orElseThrow(() -> new IllegalArgumentException( "해당 유저가 존재 하지 않습니다."));
+		
+		
+		UserMoneyEntity userMoney = user.getUserMoney();
+		userMoney.deposit(payment.getUsedFund());
+		userMoneyRepository.save(userMoney);
+		
+		Calendar calendar = Calendar.getInstance();
+		Date validDay = calendar.getTime();
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		String now = sdf.format(validDay);
+		
+		for(UsedPointEntity usedP : payment.getUsedPoints()) {
+			if(usedP.getPoint().getValid().compareTo(now) > 0) {
+				PointEntity point = usedP.getPoint();
+				point.deposit(usedP.getUsedMoney());
+				pointRepository.save(point);
+				usedPointRepository.delete(usedP);
+			}
+		}
+		
+		CouponEntity coupon = null;
+		if(payment.getCoupon() != null) {
+			coupon = payment.getCoupon();
+			coupon.giveBackCoupon();
+			couponRepository.save(coupon);
+		}
+		
+		for(PayedProductEntity payedP :payment.getPayedProducts()) {
+			 ProductEntity product =  payedP.getProduct();
+			 product.giveBackProduct(payedP.getAmount());
+			 productRepository.save(product);
+			 payedProductRepository.delete(payedP);
+		}
+		
+		Set<CouponEntity> coupons = user.getCoupons();
+		List<CouponDto> couponsDto = new ArrayList<CouponDto>();
+		for(CouponEntity c : coupons) {
+			if(!c.getIsUsed().isUsed()) {
+				couponsDto.add(CouponDto.builder()
+						.couponId(c.getCouponId())
+						.discountRate(c.getDiscountRate().getRate())
+						.couponName(c.getCouponName())
+						.minPrice(c.getDiscountRate().getMinPrice())
+						.build());
+			}
+		}
+		
+		
+		Set<PointEntity> pointsSet = user.getPoints();
+		List<PointEntity> points = new ArrayList<PointEntity>(pointsSet);
+		Collections.sort(points);
+				
+		List<PointDto> pointsDto = new ArrayList<PointDto>();
+		for(PointEntity p : points) {
+			if(p.getPointMoney() > 0 && p.getValid().compareTo(now) > 0) {
+			pointsDto.add(PointDto.builder()
+					.pointId(p.getPointId())
+					.valid(p.getValid())
+					.pointMoney(p.getPointMoney())
+					.pointName(p.getPointName())
+					.build());
+			}
+		}
+		
+		int fund = user.getUserMoney().getFund();
+		int giveBackMoney = payment.getUsedMoney();
+		
+		paymentRepository.delete(payment);
+		return RefundResponseDto.builder()
+				.coupons(couponsDto)
+				.points(pointsDto)
+				.fund(fund)
+				.giveBackMoney(giveBackMoney)
+				.build();
 	}
 
 }
