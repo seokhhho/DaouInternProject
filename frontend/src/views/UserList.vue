@@ -3,7 +3,7 @@
     
       <v-btn @click="moveToMain" style="float : right ; margin-right:5%">메인 페이지</v-btn>
     
-    <div class="main-title">회원 리스트</div>
+    <div class="main-title" style="margin-left:9%">회원 리스트</div>
     <div class ="user-table">
     <v-simple-table>
         <template v-slot:default>
@@ -38,6 +38,7 @@
           color="primary"
           dark
           style="margin-left:1%;"
+          @click="moveToPayList(item)"
         >
           결제내역
         </v-btn>
@@ -84,6 +85,11 @@ export default {
       },
       moveToMain(){
       this.$router.push("/");
+    },
+    moveToPayList(item){
+      localStorage.setItem('userNumber', item.userNumber);
+        localStorage.setItem('userName', item.name);
+      this.$router.push("/payList");
     }
   }
 };

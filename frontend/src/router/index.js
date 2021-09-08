@@ -6,6 +6,8 @@ import UserList from "../views/UserList.vue";
 import BuyProduct from "../views/BuyProduct.vue";
 import Pay from "../views/Pay.vue";
 import FinishedPay from "../views/FinishedPay.vue";
+import PayList from "../views/PayList.vue";
+import MyBalance from "../views/MyBalance.vue";
 Vue.use(VueRouter);
 
 const routes = [
@@ -41,6 +43,19 @@ const routes = [
     component: FinishedPay,
     props: true,
   },
+  {
+    path: "/payList",
+    name: "PayList",
+    component: PayList,
+    props: true,
+  },
+  {
+    path: "/myBalance",
+    name: "MyBalance",
+    component: MyBalance,
+    props: true,
+  },
+  
   {
     path: "/about",
     name: "About",

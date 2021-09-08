@@ -36,5 +36,11 @@ public class UserMoneyEntity {
 		this.fund -= usingFund;
 		return fund;
 	}
+
+	public int deposit(int usedMoney) {
+		this.fund += usedMoney;
+		return fund;
+		
+	}
 	
 }

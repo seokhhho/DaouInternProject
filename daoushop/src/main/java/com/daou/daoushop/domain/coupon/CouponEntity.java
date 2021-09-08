@@ -48,6 +48,10 @@ public class CouponEntity {
 	public void usingCoupon() {
 		this.isUsed = IsUsed.TRUE;
 	}
+
+	public void giveBackCoupon() {
+		this.isUsed = IsUsed.FALSE;
+	}
 	
 	
 
