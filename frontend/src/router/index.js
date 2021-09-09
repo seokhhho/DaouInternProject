@@ -3,6 +3,11 @@ import VueRouter from "vue-router";
 import Main from "../views/Main.vue";
 import Join from "../views/Join.vue";
 import UserList from "../views/UserList.vue";
+import BuyProduct from "../views/BuyProduct.vue";
+import Pay from "../views/Pay.vue";
+import FinishedPay from "../views/FinishedPay.vue";
+import PayList from "../views/PayList.vue";
+import MyBalance from "../views/MyBalance.vue";
 Vue.use(VueRouter);
 
 const routes = [
@@ -21,6 +26,36 @@ const routes = [
     name: "UserList",
     component: UserList,
   },
+  {
+    path: "/buyProduct",
+    name: "BuyProduct",
+    component: BuyProduct,
+  },
+  {
+    path: "/pay",
+    name: "Pay",
+    component: Pay,
+    props: true,
+  },
+  {
+    path: "/finishedPay",
+    name: "FinishedPay",
+    component: FinishedPay,
+    props: true,
+  },
+  {
+    path: "/payList",
+    name: "PayList",
+    component: PayList,
+    props: true,
+  },
+  {
+    path: "/myBalance",
+    name: "MyBalance",
+    component: MyBalance,
+    props: true,
+  },
+  
   {
     path: "/about",
     name: "About",

@@ -10,11 +10,11 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class OrderRequestDto {
 	
-	private String userNumber;
+	private Integer userNumber;
 	private List<ProductAmountDto> products;
 
 	@Builder
-	public OrderRequestDto(String id, List<ProductAmountDto> products) {
+	public OrderRequestDto(Integer userNumber, List<ProductAmountDto> products) {
 		this.userNumber = userNumber;
 		this.products = products;
 	}

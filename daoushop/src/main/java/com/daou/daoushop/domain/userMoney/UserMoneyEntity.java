@@ -1,7 +1,6 @@
 package com.daou.daoushop.domain.userMoney;
 
-import java.io.Serializable;
-
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
@@ -17,7 +16,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Getter
 @Entity(name="user_money")
-public class UserMoneyEntity implements Serializable {
+public class UserMoneyEntity {
 	
 	@Id
 	@GeneratedValue
@@ -29,8 +28,19 @@ public class UserMoneyEntity implements Serializable {
 	
 	@Builder
 	public UserMoneyEntity(UserEntity user, int fund) {
-		this.user = user;
+		this.user = user; 
 		this.fund = fund;
+	}
+	
+	public int deduct(int usingFund) {
+		this.fund -= usingFund;
+		return fund;
+	}
+
+	public int deposit(int usedMoney) {
+		this.fund += usedMoney;
+		return fund;
+		
 	}
 	
 }

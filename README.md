@@ -20,23 +20,21 @@
 
 
 
-### 프로토타입
-
-**https://ovenapp.io/view/vSDV8bFSTWwV3bcFf0WOFWoIdKrMb7M9/**
 
 
+### Process Flow Chart
 
 
 
-### Data Process Diagram
-
-https://miro.com/app/board/o9J_l0Oex6o=/
-
-![](./산출물/DataProcessDiagram/자동결제.png)
+![](./산출물/프로세스흐름도/결제_프로세스.PNG)
 
 
 
-![System_Diagram](./산출물/DataProcessDiagram/환불.png)
+![System_Diagram](./산출물/프로세스흐름도/자동결제_금액조회_프로세스.PNG)
+
+
+
+![System_Diagram](./산출물/프로세스흐름도/환불_프로세스.PNG)
 
 
 

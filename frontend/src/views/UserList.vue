@@ -1,8 +1,9 @@
 <template>
   <div class="main">
-    <!-- <img alt="Vue logo" src="../assets/logo.png" /> -->
-    <!-- <HelloWorld/> -->
-    <div class="main-title">회원 리스트</div>
+    
+      <v-btn @click="moveToMain" style="float : right ; margin-right:5%">메인 페이지</v-btn>
+    
+    <div class="main-title" style="margin-left:9%">회원 리스트</div>
     <div class ="user-table">
     <v-simple-table>
         <template v-slot:default>
@@ -28,6 +29,7 @@
           color="primary"
           dark
           style="margin-left:10%;"
+          @click="moveToBuyProduct(item)"
         >
           상품구매
         </v-btn>
@@ -36,6 +38,7 @@
           color="primary"
           dark
           style="margin-left:1%;"
+          @click="moveToPayList(item)"
         >
           결제내역
         </v-btn>
@@ -74,7 +77,20 @@ export default {
           .catch(function(error) {
             console.log(error);
           });
-      }
+      },
+      moveToBuyProduct(item){
+        localStorage.setItem('userNumber', item.userNumber);
+        localStorage.setItem('userName', item.name);
+        this.$router.push("/buyProduct");
+      },
+      moveToMain(){
+      this.$router.push("/");
+    },
+    moveToPayList(item){
+      localStorage.setItem('userNumber', item.userNumber);
+        localStorage.setItem('userName', item.name);
+      this.$router.push("/payList");
+    }
   }
 };
 </script>
@@ -82,8 +98,8 @@ export default {
 <style>
 .user-table{
     /* text-align: center; */
-    margin-left: 35%;
-    margin-right: 38%;
+    margin-left: 30%;
+    margin-right: 30%;
     margin-top: 5%;
 }
 </style>

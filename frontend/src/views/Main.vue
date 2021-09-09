@@ -1,7 +1,6 @@
 <template>
   <div class="main">
-    <!-- <img alt="Vue logo" src="../assets/logo.png" /> -->
-    <!-- <HelloWorld/> -->
+    
     <div class="main-title">다우 쇼핑</div>
     <div class="main-button">
       <v-btn
@@ -27,6 +26,7 @@
         color="primary"
         dark
         id="myMoney"
+        @click="myBalance"
       >
         내 보유금액
       </v-btn>
@@ -35,6 +35,7 @@
         color="primary"
         dark
         id="buyProduct"
+        @click="buyProduct"
       >
         상품 구매
       </v-btn>
@@ -57,6 +58,12 @@ export default {
     },
     userList(){
       this.$router.push("/userList");
+    },
+    buyProduct(){
+      this.$router.push("/buyProduct");
+    },
+    myBalance(){
+      this.$router.push("/myBalance");
     }
   }
 };
