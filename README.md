@@ -8,13 +8,15 @@
 
 ### ER-Diagram
 
-![ER-Diagram](./산출물/ER-Diagram.png)
+------
+
+<img src="./산출물/ER-Diagram.png" alt="ER-Diagram"  />
 
 
 
 ### 시스템 구조도
 
-
+------
 
 ![System_Diagram](./산출물/System_Diagram.png)
 
@@ -24,7 +26,7 @@
 
 ### Process Flow Chart
 
-
+------
 
 ![](./산출물/프로세스흐름도/결제_프로세스.PNG)
 
@@ -42,4 +44,17 @@
 
 ### API 설계 
 
+------
+
 https://unmarred-dinosaur-50a.notion.site/API-025347f295744439819fc65805036dff
+
+
+
+
+
+### 데이터 흐름도 
+
+------
+
+https://miro.com/app/board/o9J_l0Oex6o=/
+
