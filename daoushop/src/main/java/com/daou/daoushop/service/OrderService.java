@@ -6,7 +6,6 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 
 import org.jetbrains.annotations.NotNull;
@@ -29,7 +28,6 @@ import com.daou.daoushop.domain.user.UserEntity;
 import com.daou.daoushop.domain.user.UserRepository;
 import com.daou.daoushop.domain.userMoney.UserMoneyEntity;
 import com.daou.daoushop.domain.userMoney.UserMoneyRepository;
-import com.daou.daoushop.web.AutoPayInfo;
 import com.daou.daoushop.web.dto.RefundResponseDto;
 import com.daou.daoushop.web.dto.CouponDto;
 import com.daou.daoushop.web.dto.OrderBalanceResponseDto;
@@ -57,6 +55,8 @@ public class OrderService {
 	private final PaymentRepository paymentRepository;
 	private final PayedProductRepository payedProductRepository;
 	private final UsedPointRepository usedPointRepository;
+
+	private final ProductService productService;
 	
 	
 	/*자동 결제 시 결제 정보 가져오기*/
@@ -64,23 +64,97 @@ public class OrderService {
 	public OrderResponseDto findAutoPayInfo(@NotNull OrderRequestDto requestDto) {
 		
 		List<ProductAmountDto> buyedProducts = requestDto.getProducts();
-		
-		/*반환해 줄 객체 관련 데이터*/
-		int totalPrice = 0;
-		int discountedPrice = 10;
-		CouponEntity usingCoupon = null;
-		List<UsingPointDto> usingPoints = new ArrayList<>();
-		int usingFund = 0;
-		int pgPayMoney = 0;
-		
-		AutoPayInfo autoPayInfo = new AutoPayInfo(0,0,null,new ArrayList<>(),0,0);
+
+		OrderResponseDto responseDto = new OrderResponseDto();
 
 		/*상품 정보를 통해 총 가격 구하기*/
-		totalPrice = getTotalPrice(buyedProducts, totalPrice);
+		responseDto.setTotalPrice(productService.getTotalPrice(buyedProducts, responseDto.getTotalPrice()));
+
 
 		/*유저 정보 불러오기*/
 		UserEntity user = userRepository.findById(requestDto.getUserNumber())
 					.orElseThrow(() -> new IllegalArgumentException( "해당 유저가 존재 하지 않습니다."));
+
+		
+		/*쿠폰 정보 불러와 가장 적합한 쿠폰 선택 후 할인 가격 적용*/
+		CouponEntity usingCoupon = selectCoupon(responseDto.getTotalPrice(), user);
+
+		responseDto.setCouponId(usingCoupon.getCouponId());
+		responseDto.setCouponName(usingCoupon.getCouponName());
+		responseDto.setDiscountRate(usingCoupon.getDiscountRate().getRate());
+		responseDto.setDiscountedPrice(responseDto.getTotalPrice());
+
+		if(usingCoupon != null) {
+			responseDto.setDiscountedPrice((int)(responseDto.getTotalPrice() - ((float)responseDto.getTotalPrice() / 100 * usingCoupon.getDiscountRate().getRate())));
+		}
+
+		/*사용 할 포인트 적용*/
+		int remainMoney = selectPoints(responseDto.getDiscountedPrice(), responseDto.getUsingPoints(), user);
+
+		/*남은 돈 있을 시 적립금 적용*/
+		remainMoney = applyFund(responseDto, user, remainMoney);
+
+		/*남은 돈 있을 시 결제금액*/
+		responseDto.setPgPayMoney(remainMoney);
+
+		return responseDto;
+	}
+
+
+	private CouponEntity selectCoupon(int totalPrice, @NotNull UserEntity user) {
+		CouponEntity usingCoupon = null;
+		Set<CouponEntity> coupons = user.getCoupons();
+		int discountRate = 0;
+
+		for(CouponEntity c:coupons) {
+			if(!c.getIsUsed().isUsed() && c.getDiscountRate().getMinPrice() <= totalPrice
+					&& discountRate < c.getDiscountRate().getRate()) {
+				usingCoupon = c;
+				discountRate = c.getDiscountRate().getRate();
+			}
+		}
+		return usingCoupon;
+	}
+
+	private int selectPoints(int discountedPrice, List<UsingPointDto> usingPoints, @NotNull UserEntity user) {
+		List<PointEntity> points = null;
+		points = new ArrayList(user.getPoints());
+		Collections.sort(points);
+
+		int remainMoney = discountedPrice;
+
+		Calendar calendar = Calendar.getInstance();
+		Date validDay = calendar.getTime();
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		String now = sdf.format(validDay);
+
+		for(PointEntity p : points) {
+			if(p.getPointMoney() > 0 && p.getValid().compareTo(now) > 0) {
+				if(p.getPointMoney() >= remainMoney) {
+					usingPoints.add(UsingPointDto.builder()
+							.pointId(p.getPointId())
+							.valid(p.getValid())
+							.usingMoney(remainMoney)
+							.pointName(p.getPointName())
+							.build());
+					remainMoney = 0;
+					break;
+				}else {
+					usingPoints.add(UsingPointDto.builder()
+							.pointId(p.getPointId())
+							.valid(p.getValid())
+							.usingMoney(p.getPointMoney())
+							.pointName(p.getPointName())
+							.build());
+					remainMoney -= p.getPointMoney();
+				}
+			}
+		}
+		return remainMoney;
+	}
+
+	private int applyFund(OrderResponseDto responseDto, UserEntity user, int remainMoney) {
+
 
 		/*쿠폰 정보 불러와 가장 적합한 쿠폰 선택 후 할인 가격 적용*/
 		usingCoupon = getCouponEntity(totalPrice, usingCoupon, user);
@@ -94,53 +168,19 @@ public class OrderService {
 		int remainMoney = getRemainMoney(discountedPrice, usingPoints, user);
 
 		/*남은 돈 있을 시 적립금 적용*/
+
 		if(remainMoney > 0) {
 			if(user.getUserMoney().getFund() >= remainMoney) {
-				usingFund = remainMoney;
+				responseDto.setUsingFund(remainMoney);
 				remainMoney = 0;
 			}else {
-				usingFund = user.getUserMoney().getFund();
-				remainMoney -= usingFund;
+				responseDto.setUsingFund(user.getUserMoney().getFund());
+				remainMoney -= responseDto.getUsingFund();
 			}
 		}
-		
-		/*남은 돈 있을 시 결제금액*/
-		pgPayMoney = remainMoney;
-		
-		if(usingCoupon == null) {
-			return OrderResponseDto.builder()
-				.totalPrice(totalPrice)
-				.discountedPrice(discountedPrice)
-				.usingPoints(usingPoints)
-				.usingFund(usingFund)
-				.pgPayMoney(pgPayMoney)
-				.build();
-		}
-		else {
-			return OrderResponseDto.builder()
-					.totalPrice(totalPrice)
-					.discountedPrice(discountedPrice)
-					.couponId(usingCoupon.getCouponId())
-					.couponName(usingCoupon.getCouponName())
-					.discountRate(usingCoupon.getDiscountRate().getRate())
-					.usingPoints(usingPoints)
-					.usingFund(usingFund)
-					.pgPayMoney(pgPayMoney)
-					.build();
-		}
+		return remainMoney;
 	}
 
-	public int getTotalPrice(@org.jetbrains.annotations.NotNull List<ProductAmountDto> buyedProducts, int totalPrice) {
-		for(ProductAmountDto p : buyedProducts) {
-			ProductEntity product = productRepository.findById(p.getProductId())
-					.orElseThrow(() -> new IllegalArgumentException( p.getProductId() +"번 상품이 존재 하지 않습니다."));
-			if(product.getStock() < p.getAmount()) {
-				throw new IllegalArgumentException("재고가 부족합니다.");
-			}
-			totalPrice += product.getPrice() * p.getAmount();
-		}
-		return totalPrice;
-	}
 
 	private int getRemainMoney(int discountedPrice, List<UsingPointDto> usingPoints, @NotNull UserEntity user) {
 		List<PointEntity> points = null;
@@ -195,8 +235,8 @@ public class OrderService {
 	}
 
 	@Transactional
-	public OrderBalanceResponseDto autoPay(@org.jetbrains.annotations.NotNull PayRequestDto requestDto) {
-		
+	public OrderBalanceResponseDto autoPay(@NotNull PayRequestDto requestDto) {
+
 		UserEntity user = userRepository.findById(requestDto.getUserNumber())
 				.orElseThrow(() -> new IllegalArgumentException( "해당 유저가 존재 하지 않습니다."));
 		
