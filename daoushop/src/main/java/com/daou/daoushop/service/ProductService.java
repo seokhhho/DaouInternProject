@@ -5,7 +5,9 @@ import java.util.stream.Collectors;
 
 import com.daou.daoushop.domain.product.ProductEntity;
 import com.daou.daoushop.web.dto.ProductAmountDto;
+
 import org.jetbrains.annotations.NotNull;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,6 +28,7 @@ public class ProductService {
 				.map(ProductResponseDto::new)
 				.collect(Collectors.toList());
 	}
+
 
 	public  int getTotalPrice(@NotNull List<ProductAmountDto> buyedProducts, int totalPrice) {
 		for(ProductAmountDto p : buyedProducts) {

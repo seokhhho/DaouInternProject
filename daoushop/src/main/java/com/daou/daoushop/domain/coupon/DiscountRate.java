@@ -1,6 +1,7 @@
 package com.daou.daoushop.domain.coupon;
 
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 
 @Getter
@@ -14,4 +15,6 @@ public enum DiscountRate {
 	
 	private final Integer rate;
 	private final Integer minPrice;
+
+
 }
