@@ -3,12 +3,9 @@ package com.daou.daoushop.service;
 import java.util.List;
 import java.util.stream.Collectors;
 
-<<<<<<< Updated upstream
-=======
 import com.daou.daoushop.domain.product.ProductEntity;
 import com.daou.daoushop.web.dto.ProductAmountDto;
 import org.jetbrains.annotations.NotNull;
->>>>>>> Stashed changes
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,8 +26,6 @@ public class ProductService {
 				.map(ProductResponseDto::new)
 				.collect(Collectors.toList());
 	}
-<<<<<<< Updated upstream
-=======
 
 	public  int getTotalPrice(@NotNull List<ProductAmountDto> buyedProducts, int totalPrice) {
 		for(ProductAmountDto p : buyedProducts) {
@@ -44,6 +39,4 @@ public class ProductService {
 		return totalPrice;
 	}
 
-
->>>>>>> Stashed changes
 }
